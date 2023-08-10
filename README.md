@@ -41,6 +41,4 @@ python -m pytest --verbose
 ```
 
 ### Results
-Input video
-
-Output video
+Original vs segmented video
