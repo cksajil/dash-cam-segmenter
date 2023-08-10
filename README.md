@@ -7,7 +7,7 @@ Pretrained computer vision models such as UNET and CANET are used to segment das
 
 **Python Version**
 ```
-Python 3.9.12
+Python 3.9.1
 ```
 
 ### Setting up virtual environment
@@ -32,7 +32,7 @@ python -m pip install -r requirements.txt
 ### How to run
 
 ```console
-python main.py
+python main.py --youtube "YouTube video URL"
 ```
 
 ### Testing
