@@ -33,6 +33,9 @@ python -m pip install -r requirements.txt
 
 ```console
 python main.py --youtube "YouTube video URL"
+
+# Example
+python3 main.py --youtube "https://www.youtube.com/watch?v=BGqs0cXK0e8&t=13s&pp=ygUTdGhvZHVwdXpoYSBkYXNoIGNhbQ%3D%3D"
 ```
 
 ### Testing

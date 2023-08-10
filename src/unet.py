@@ -15,5 +15,5 @@ def load_unet():
         encoder_freeze=True,
         decoder_block_type="upsampling",
     )
-    unet_model.load_weights("./models/UNET_0.0713.h5")
+    unet_model.load_weights("./models/UNET.h5")
     return unet_model
