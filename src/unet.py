@@ -6,6 +6,7 @@ from segmentation_models import Unet
 
 def load_unet():
     NCLASSES = 21
+
     unet_model = Unet(
         "resnet50",
         encoder_weights="imagenet",
@@ -15,5 +16,6 @@ def load_unet():
         encoder_freeze=True,
         decoder_block_type="upsampling",
     )
+
     unet_model.load_weights("./models/UNET.h5")
     return unet_model
