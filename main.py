@@ -1,8 +1,11 @@
-import argparse
 import os
 import cv2
-from pytube import YouTube
 import ssl
+import argparse
+import numpy as np
+import tensorflow as tf
+from pytube import YouTube
+from src.unet import load_unet
 
 ssl._create_default_https_context = ssl._create_stdlib_context
 
@@ -14,15 +17,35 @@ def on_progress(stream, chunk, bytes_remaining):
     print(f"Downloading: {percentage:.2f}%")
 
 
+def colorize_seg_image(frame):
+    colored_mask = np.zeros((256, 256, 3), dtype=np.uint8)
+    for class_id in range(21):
+        class_color = np.random.randint(0, 255, size=3)
+        colored_mask[frame[:, :, class_id] == 1] = class_color
+        return colored_mask
+
+
+def predict_with_model(model, image):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    pred_image = model.predict(image[np.newaxis, :, :, :])
+    pred_image = pred_image[0, :, :, :]
+    return pred_image
+
+
 def process_video(video_path):
+    model = load_unet()
     cap = cv2.VideoCapture(video_path)
 
     while cap.isOpened():
-        ret, frame = cap.read()
+        ret, frame_raw = cap.read()
         if not ret:
             break
-        frame = cv2.resize(frame, (256, 256))
-        cv2.imshow("Processed Video", frame)
+        frame_raw = cv2.resize(frame_raw, (256, 256))
+        frame_out = predict_with_model(model, frame_raw)
+        frame_color = colorize_seg_image(frame_out)
+
+        stacked_frame = np.hstack((frame_raw, frame_color))
+        cv2.imshow("Original Vs Segmented Video", stacked_frame)
         if cv2.waitKey(30) & 0xFF == ord("q"):
             break
 
