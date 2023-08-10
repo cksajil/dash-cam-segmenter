@@ -1,9 +1,7 @@
 # Real-time segmentation of dash cam videos (Work in progress)
 Pretrained computer vision models such as UNET and CANET are used to segment dash cam video specifically on Indian roads.
 
-### Overview
-
-### Dataset
+![output_preview]()
 
 **Python Version**
 ```
@@ -42,6 +40,3 @@ python3 main.py --youtube "https://www.youtube.com/watch?v=BGqs0cXK0e8&t=13s&pp=
 ```console
 python -m pytest --verbose
 ```
-
-### Results
-Original vs segmented video
