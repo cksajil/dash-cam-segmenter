@@ -1,7 +1,10 @@
 import os
+from src.general import load_config
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 from segmentation_models import Unet
+
+config = load_config("my_config.yaml")
 
 
 def load_unet():
@@ -12,7 +15,7 @@ def load_unet():
         encoder_weights="imagenet",
         classes=NCLASSES,
         activation="softmax",
-        input_shape=(256, 256, 3),
+        input_shape=(config["image_height"], config["image_width"], 3),
         encoder_freeze=True,
         decoder_block_type="upsampling",
     )

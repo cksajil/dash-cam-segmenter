@@ -6,8 +6,11 @@ import numpy as np
 import tensorflow as tf
 from pytube import YouTube
 from src.unet import load_unet
+from src.general import load_config
 
 ssl._create_default_https_context = ssl._create_stdlib_context
+
+config = load_config("my_config.yaml")
 
 
 def on_progress(stream, chunk, bytes_remaining):
@@ -18,7 +21,9 @@ def on_progress(stream, chunk, bytes_remaining):
 
 
 def colorize_seg_image(frame):
-    colored_mask = np.zeros((256, 256, 3), dtype=np.uint8)
+    colored_mask = np.zeros(
+        (config["image_height"], config["image_width"], 3), dtype=np.uint8
+    )
     for class_id in range(21):
         class_color = np.random.randint(0, 255, size=3)
         colored_mask[frame[:, :, class_id] == 1] = class_color
@@ -40,7 +45,9 @@ def process_video(video_path):
         ret, frame_raw = cap.read()
         if not ret:
             break
-        frame_raw = cv2.resize(frame_raw, (256, 256))
+        frame_raw = cv2.resize(
+            frame_raw, (config["image_height"], config["image_width"])
+        )
         frame_out = predict_with_model(model, frame_raw)
         frame_color = colorize_seg_image(frame_out)
 
