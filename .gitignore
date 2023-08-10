@@ -8,3 +8,4 @@ __pycache__/
 # Ignore virtual environment
 venv/
 downloaded_videos/
+models/
