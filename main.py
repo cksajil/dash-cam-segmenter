@@ -14,6 +14,7 @@ ssl._create_default_https_context = ssl._create_stdlib_context
 
 config = load_config("my_config.yaml")
 
+
 def initialize_directories():
     print("Creating folders if does not exist")
     folder_names = ["video", "processed_frames", "models"]
@@ -41,6 +42,7 @@ def process_video(video_path):
     model = load_unet()
     cap = cv2.VideoCapture(video_path)
     N = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
     k = 0
     pbar = tqdm(total=N)
     while cap.isOpened():
@@ -52,8 +54,8 @@ def process_video(video_path):
         )
         frame_out = predict_with_model(model, frame_raw)
         plot_n_save(k, frame_raw, frame_out)
-        pbar.update(k/N)
-        k+=1
+        pbar.update(k / N)
+        k += 1
     pbar.close()
 
     cap.release()
@@ -67,6 +69,29 @@ def download_youtube_video(youtube_url, output_dir):
     video_path = os.path.join(output_dir, "demo_video.mp4")
     stream.download(output_path=output_dir, filename="demo_video.mp4")
     return video_path
+
+
+def generate_video(FPS=30.0):
+    print("Generates original and segmented comparison video")
+    image_folder = "processed_frames"
+    video_name = "segmented_video.mp4"
+    images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
+    num_images = len(images)
+    images = ["frame_" + str(i) + ".png" for i in range(num_images)]
+    frame = cv2.imread(os.path.join(image_folder, images[0]))
+    height, width, layers = frame.shape
+    video = cv2.VideoWriter(
+        filename=os.path.join("./video", video_name),
+        fourcc=cv2.VideoWriter_fourcc("m", "p", "4", "v"),
+        frameSize=(width, height),
+        fps=FPS,
+    )
+
+    for image in tqdm(images):
+        video.write(cv2.imread(os.path.join(image_folder, image)))
+
+    cv2.destroyAllWindows()
+    video.release()
 
 
 def main():
@@ -87,6 +112,8 @@ def main():
         return
 
     process_video(video_path)
+
+    generate_video()
 
 
 if __name__ == "__main__":
