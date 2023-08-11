@@ -6,11 +6,17 @@ import numpy as np
 import tensorflow as tf
 from pytube import YouTube
 from src.unet import load_unet
-from src.general import load_config
+from src.general import load_config, create_folder
 
 ssl._create_default_https_context = ssl._create_stdlib_context
 
 config = load_config("my_config.yaml")
+
+def initialize_directories():
+    print("Creating folders")
+    folder_names = ["video", "processed_frames", "models"]
+    for fol_name in folder_names:
+        create_folder(fol_name)
 
 
 def on_progress(stream, chunk, bytes_remaining):
@@ -53,6 +59,7 @@ def download_youtube_video(youtube_url, output_dir):
 
 
 def main():
+    initialize_directories()
     parser = argparse.ArgumentParser(
         description="Process YouTube videos or video files."
     )
@@ -61,7 +68,7 @@ def main():
     args = parser.parse_args()
 
     if args.youtube:
-        video_path = download_youtube_video(args.youtube, "downloaded_videos")
+        video_path = download_youtube_video(args.youtube, "video")
     elif args.file:
         video_path = args.file
     else:
