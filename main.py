@@ -3,9 +3,11 @@ import cv2
 import ssl
 import argparse
 import numpy as np
+from tqdm import tqdm
 import tensorflow as tf
 from pytube import YouTube
 from src.unet import load_unet
+from src.visulaizer import plot_n_save
 from src.general import load_config, create_folder
 
 ssl._create_default_https_context = ssl._create_stdlib_context
@@ -28,15 +30,18 @@ def on_progress(stream, chunk, bytes_remaining):
 
 def predict_with_model(model, image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    pred_image = model.predict(image[np.newaxis, :, :, :])
+    pred_image = model.predict(image[np.newaxis, :, :, :], verbose=0)
     pred_image = pred_image[0, :, :, :]
+    pred_image = tf.argmax(pred_image, axis=-1)
     return pred_image
 
 
 def process_video(video_path):
     model = load_unet()
     cap = cv2.VideoCapture(video_path)
-
+    N = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    k = 0
+    pbar = tqdm(total=N)
     while cap.isOpened():
         ret, frame_raw = cap.read()
         if not ret:
@@ -45,6 +50,10 @@ def process_video(video_path):
             frame_raw, (config["image_width"], config["image_height"])
         )
         frame_out = predict_with_model(model, frame_raw)
+        plot_n_save(k, frame_raw, frame_out)
+        pbar.update(k/N)
+        k+=1
+    pbar.close()
 
     cap.release()
     cv2.destroyAllWindows()
