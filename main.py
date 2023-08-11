@@ -2,6 +2,7 @@ import os
 import cv2
 import ssl
 import argparse
+import requests
 import numpy as np
 from tqdm import tqdm
 import tensorflow as tf
@@ -20,6 +21,31 @@ def initialize_directories():
     folder_names = ["video", "processed_frames", "models"]
     for fol_name in folder_names:
         create_folder(fol_name)
+
+
+def download_model():
+    if not os.path.exists(os.path.join("models", "UNET.h5")):
+        print("Downloading pretrained UNET model if not exists")
+        doi = "8237790"
+        response = requests.get(f"https://zenodo.org/api/records/{doi}")
+        data = response.json()
+        files = data["files"]
+        model_files = [file for file in files if file["key"].endswith(".h5")]
+
+        if len(model_files) == 0:
+            print("No model files found.")
+        else:
+            model_file = model_files[0]
+            file_url = model_file["links"]["self"]
+            model_filename = model_file["key"]
+
+            response = requests.get(file_url, stream=True)
+            segments = response.iter_content(chunk_size=8192)
+            with open(os.path.join("models", "UNET.h5"), "wb") as file:
+                for chunk in tqdm(segments):
+                    file.write(chunk)
+
+            print(f"Model downloaded as {model_filename}")
 
 
 def on_progress(stream, chunk, bytes_remaining):
@@ -111,8 +137,8 @@ def main():
         print("Please provide either a YouTube URL or a video file path.")
         return
 
+    download_model()
     process_video(video_path)
-
     generate_video()
 
 
