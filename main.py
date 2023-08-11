@@ -15,7 +15,7 @@ ssl._create_default_https_context = ssl._create_stdlib_context
 config = load_config("my_config.yaml")
 
 def initialize_directories():
-    print("Creating folders")
+    print("Creating folders if does not exist")
     folder_names = ["video", "processed_frames", "models"]
     for fol_name in folder_names:
         create_folder(fol_name)
