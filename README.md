@@ -39,13 +39,3 @@ python3 main.py --youtube "https://youtu.be/INcqJsGfBZU"
 
 python3 main.py --file ./video/demo_video.mp4
 ```
-
-```console
-# Generate segmented video
-ffmpeg -i MovieName.mp4 -filter:v "setpts=0.1*PTS"MovieName_Fast.mp4
-```
-
-### Testing
-```console
-python -m pytest --verbose
-```
