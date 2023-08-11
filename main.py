@@ -40,7 +40,7 @@ def download_model():
             model_filename = model_file["key"]
 
             response = requests.get(file_url, stream=True)
-            segments = response.iter_content(chunk_size=8192)
+            segments = response.iter_content()
             with open(os.path.join("models", "UNET.h5"), "wb") as file:
                 for chunk in tqdm(segments):
                     file.write(chunk)
