@@ -37,6 +37,7 @@ def predict_with_model(model, image):
 
 
 def process_video(video_path):
+    print("Segmenting Frames")
     model = load_unet()
     cap = cv2.VideoCapture(video_path)
     N = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -60,6 +61,7 @@ def process_video(video_path):
 
 
 def download_youtube_video(youtube_url, output_dir):
+    print("Downloads video if it does not exist locally")
     yt = YouTube(youtube_url, on_progress_callback=on_progress)
     stream = yt.streams.filter(res="360p", progressive=True).first()
     video_path = os.path.join(output_dir, "demo_video.mp4")
