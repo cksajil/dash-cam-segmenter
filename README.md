@@ -35,9 +35,9 @@ python3 main.py --youtube "YouTube video URL"
 python3 main.py --file <path_to_video_in_hard_disc>
 
 # Example
-python3 main.py --youtube "https://www.youtube.com/watch?v=BGqs0cXK0e8&t=13s&pp=ygUTdGhvZHVwdXpoYSBkYXNoIGNhbQ%3D%3D"
+python3 main.py --youtube "https://youtu.be/INcqJsGfBZU"
 
-python3 main.py --file ./downloaded_videos/demo_video.mp4
+python3 main.py --file ./video/demo_video.mp4
 ```
 
 ### Testing
