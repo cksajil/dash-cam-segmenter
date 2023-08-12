@@ -2,7 +2,6 @@ import os
 import imageio
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from src.general import get_list_of_seg_images
 
 
 def plot_n_save(k, original, segmented):
