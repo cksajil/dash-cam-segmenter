@@ -8,8 +8,8 @@ from tqdm import tqdm
 import tensorflow as tf
 from pytube import YouTube
 from src.unet import load_unet
-from src.visulaizer import plot_n_save
-from src.general import load_config, create_folder
+from src.visulaizer import plot_n_save, gif_creator
+from src.general import load_config, create_folder, get_list_of_seg_images
 
 ssl._create_default_https_context = ssl._create_stdlib_context
 
@@ -97,13 +97,10 @@ def download_youtube_video(youtube_url, output_dir):
     return video_path
 
 
-def generate_video(FPS=30.0):
+def generate_video(images, FPS=30.0):
     print("Generates original and segmented comparison video")
-    image_folder = "processed_frames"
     video_name = "segmented_video.mp4"
-    images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
-    num_images = len(images)
-    images = ["frame_" + str(i) + ".png" for i in range(num_images)]
+    image_folder = "processed_frames"
     frame = cv2.imread(os.path.join(image_folder, images[0]))
     height, width, layers = frame.shape
     video = cv2.VideoWriter(
@@ -138,8 +135,10 @@ def main():
         return
 
     download_model()
-    process_video(video_path)
-    generate_video()
+    # process_video(video_path)
+    images = get_list_of_seg_images()
+    # generate_video(images)
+    gif_creator(images)
 
 
 if __name__ == "__main__":

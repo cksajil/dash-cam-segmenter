@@ -17,3 +17,12 @@ def create_folder(directory):
     """Function to create a folder in a location if it does not exist"""
     if not os.path.exists(directory):
         os.makedirs(directory)
+
+
+def get_list_of_seg_images():
+    print("Getting list of segmented frames")
+    image_folder = "processed_frames"
+    images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
+    num_images = len(images)
+    images = ["frame_" + str(i) + ".png" for i in range(num_images)]
+    return images
