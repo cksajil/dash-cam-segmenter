@@ -23,6 +23,8 @@ def get_list_of_seg_images():
     print("Getting list of segmented frames")
     image_folder = "processed_frames"
     images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
-    num_images = len(images)
-    images = ["frame_" + str(i) + ".png" for i in range(num_images)]
+    frames = [int(image.split(".")[0].split("_")[1]) for image in images]
+    frame_start = min(frames)
+    frame_end = max(frames)
+    images = ["frame_" + str(i) + ".png" for i in range(frame_start, frame_end)]
     return images
