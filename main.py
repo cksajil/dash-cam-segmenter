@@ -135,7 +135,7 @@ def main():
         return
 
     download_model()
-    # process_video(video_path)
+    process_video(video_path)
     images = get_list_of_seg_images()
     # generate_video(images)
     gif_creator(images)
