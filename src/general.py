@@ -20,6 +20,9 @@ def create_folder(directory):
 
 
 def get_list_of_seg_images():
+    """
+    Returns the list of segmented images in the ordinal order
+    """
     print("Getting list of segmented frames")
     image_folder = "processed_frames"
     images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
