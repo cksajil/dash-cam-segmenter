@@ -65,6 +65,10 @@ def on_progress(stream, chunk, bytes_remaining):
 
 
 def predict_with_model(model, image):
+    """
+    Function to predict segmented image
+    from raw image using UNET model
+    """
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     pred_image = model.predict(image[np.newaxis, :, :, :], verbose=0)
     pred_image = pred_image[0, :, :, :]
