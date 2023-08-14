@@ -77,6 +77,9 @@ def predict_with_model(model, image):
 
 
 def process_video(video_path):
+    """
+    Function to process raw video and create segmented video output
+    """
     print("Segmenting Frames")
     model = load_unet()
     cap = cv2.VideoCapture(video_path)
