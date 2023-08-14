@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 
 
 def plot_n_save(k, original, segmented):
+    """
+    A custom plotting function to display and save
+    original and segmented images side by side
+    """
     width = 9
     height = 3
 
