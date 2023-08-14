@@ -17,6 +17,9 @@ config = load_config("my_config.yaml")
 
 
 def initialize_directories():
+    """
+    Create required directories if it does not exist
+    """
     print("Creating folders if does not exist")
     folder_names = ["video", "processed_frames", "models"]
     for fol_name in folder_names:
@@ -24,6 +27,9 @@ def initialize_directories():
 
 
 def download_model():
+    """
+    Download pretrained model if not already downloaded
+    """
     if not os.path.exists(os.path.join("models", "UNET.h5")):
         print("Downloading pretrained UNET model if not exists")
         doi = "8237790"
