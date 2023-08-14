@@ -55,6 +55,9 @@ def download_model():
 
 
 def on_progress(stream, chunk, bytes_remaining):
+    """
+    Function to track progress of download
+    """
     total_size = stream.filesize
     bytes_downloaded = total_size - bytes_remaining
     percentage = (bytes_downloaded / total_size) * 100
