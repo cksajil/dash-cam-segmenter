@@ -26,6 +26,10 @@ def plot_n_save(k, original, segmented):
 
 
 def gif_creator(filenames):
+    """
+    A function to create segmented video
+    from segmented images passed as parameters
+    """
     print("Generaing segmented GIF video")
     with imageio.get_writer(
         os.path.join("./video", "segmented_movie.gif"), mode="I"
