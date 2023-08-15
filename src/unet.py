@@ -8,6 +8,9 @@ config = load_config("my_config.yaml")
 
 
 def load_unet():
+    """
+    Function to load pretrained UNET model and return it
+    """
     NCLASSES = 21
 
     unet_model = Unet(
