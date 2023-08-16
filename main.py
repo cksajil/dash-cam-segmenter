@@ -110,8 +110,8 @@ def download_youtube_video(youtube_url, output_dir):
     print("Downloads video if it does not exist locally")
     yt = YouTube(youtube_url, on_progress_callback=on_progress)
     stream = yt.streams.filter(res="360p", progressive=True).first()
-    video_path = os.path.join(output_dir, "demo_video.mp4")
-    stream.download(output_path=output_dir, filename="demo_video.mp4")
+    video_path = os.path.join(output_dir, config["out_video_name"])
+    stream.download(output_path=output_dir, filename=config["out_video_name"])
     return video_path
 
 
