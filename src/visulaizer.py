@@ -29,7 +29,8 @@ def plot_n_save(k, original, segmented):
     ax[1].set_yticks([])
 
     fig.set_size_inches(width, height)
-    fig.savefig("./processed_frames/frame_{}.png".format(k), dpi=200)
+
+    fig.savefig(os.path.join(config["frames_loc"], "frame_{}.png".format(k)), dpi=200)
     plt.close()
 
 
