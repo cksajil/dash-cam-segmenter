@@ -30,9 +30,9 @@ def download_model():
     """
     Download pretrained model if not already downloaded
     """
-    if not os.path.exists(os.path.join("models", "UNET.h5")):
+    if not os.path.exists(os.path.join(config["model_loc"], config["unet_model_name"])):
         print("Downloading pretrained UNET model if not exists")
-        doi = "8237790"
+        doi = config["unet_model_doi"]
         response = requests.get(f"https://zenodo.org/api/records/{doi}")
         data = response.json()
         files = data["files"]
@@ -47,7 +47,9 @@ def download_model():
 
             response = requests.get(file_url, stream=True)
             segments = response.iter_content()
-            with open(os.path.join("models", "UNET.h5"), "wb") as file:
+            with open(
+                os.path.join(config["model_loc"], config["unet_model_name"]), "wb"
+            ) as file:
                 for chunk in tqdm(segments):
                     file.write(chunk)
 

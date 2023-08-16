@@ -8,3 +8,4 @@ video_loc: video
 out_gif_name: segmented_movie.gif 
 model_loc: models
 unet_model_name: UNET.h5
+unet_model_doi: 8237790
