@@ -5,3 +5,4 @@ out_fig_width: 9
 out_fig_height: 3
 frames_loc: processed_frames
 video_loc: video
+out_gif_name: segmented_movie.gif 
