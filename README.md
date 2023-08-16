@@ -43,3 +43,9 @@ python3 main.py --youtube "https://youtu.be/INcqJsGfBZU"
 
 python3 main.py --file ./video/demo_video.mp4
 ```
+
+
+### Output
+An output video like the following comparing original and segmented frames side by side will get generated in the `video` folder.
+
+<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3plb2d2MWk3bnlheXY5eWRsNTBibWNtcmR1YTJ5ajhkc3hqc3R1ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5e8MseZLO4dS6BK6N7/giphy.gif" width="800">
