@@ -117,12 +117,12 @@ def download_youtube_video(youtube_url, output_dir):
 
 def generate_video(images, FPS=30.0):
     print("Generates original and segmented comparison video")
-    video_name = "segmented_video.mp4"
-    image_folder = "processed_frames"
+    video_name = config["seg_video_name"]
+    image_folder = config["frames_loc"]
     frame = cv2.imread(os.path.join(image_folder, images[0]))
     height, width, layers = frame.shape
     video = cv2.VideoWriter(
-        filename=os.path.join("./video", video_name),
+        filename=os.path.join(config["video_loc"], video_name),
         fourcc=cv2.VideoWriter_fourcc("m", "p", "4", "v"),
         frameSize=(width, height),
         fps=FPS,

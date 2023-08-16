@@ -7,6 +7,7 @@ frames_loc: processed_frames
 video_loc: video
 out_gif_name: segmented_movie.gif 
 out_video_name: demo_video.mp4
+seg_video_name: segmented_video.mp4
 model_loc: models
 unet_model_name: UNET.h5
 unet_model_doi: 8237790
