@@ -41,8 +41,8 @@ def gif_creator(filenames):
     """
     print("Generaing segmented GIF video")
     with imageio.get_writer(
-        os.path.join("./video", "segmented_movie.gif"), mode="I"
+        os.path.join(config["video_loc"], "segmented_movie.gif"), mode="I"
     ) as writer:
         for filename in tqdm(filenames):
-            image = imageio.imread(os.path.join("processed_frames", filename))
+            image = imageio.imread(os.path.join(config["frames_loc"], filename))
             writer.append_data(image)
