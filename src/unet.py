@@ -23,5 +23,7 @@ def load_unet():
         decoder_block_type="upsampling",
     )
 
-    unet_model.load_weights("./models/UNET.h5")
+    unet_model.load_weights(
+        os.path.join(config["model_loc"], config["unet_model_name"])
+    )
     return unet_model

@@ -6,3 +6,5 @@ out_fig_height: 3
 frames_loc: processed_frames
 video_loc: video
 out_gif_name: segmented_movie.gif 
+model_loc: models
+unet_model_name: UNET.h5
