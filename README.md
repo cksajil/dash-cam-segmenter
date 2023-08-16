@@ -5,7 +5,7 @@ Pretrained computer vision models such as UNET and CANET are used to segment das
 
 ### [To see demo video, click here](https://youtu.be/U3R7oS2YvK4)
 
-![Demo](https://github.com/cksajil/dash-cam-segmenter/blob/b7eb14a4f3137bcf4dc6d81407ad203d1976fd63/images/segmented_movie.gif)
+![Demo](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3plb2d2MWk3bnlheXY5eWRsNTBibWNtcmR1YTJ5ajhkc3hqc3R1ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5e8MseZLO4dS6BK6N7/giphy.gif)
 
 
 **Python Version**
