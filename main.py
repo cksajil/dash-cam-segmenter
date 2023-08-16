@@ -145,7 +145,7 @@ def main():
     args = parser.parse_args()
 
     if args.youtube:
-        video_path = download_youtube_video(args.youtube, "video")
+        video_path = download_youtube_video(args.youtube, config["video_loc"])
     elif args.file:
         video_path = args.file
     else:
