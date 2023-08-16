@@ -24,7 +24,9 @@ def get_list_of_seg_images():
     Returns the list of segmented images in the ordinal order
     """
     print("Getting list of segmented frames")
-    image_folder = "processed_frames"
+
+    config = load_config("my_config.yaml")
+    image_folder = config["frames_loc"]
     images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
     frames = [int(image.split(".")[0].split("_")[1]) for image in images]
     frame_start = min(frames)
