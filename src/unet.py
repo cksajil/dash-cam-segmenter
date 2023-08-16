@@ -11,7 +11,7 @@ def load_unet():
     """
     Function to load pretrained UNET model and return it
     """
-    NCLASSES = 21
+    NCLASSES = config["num_classes"]
 
     unet_model = Unet(
         "resnet50",
