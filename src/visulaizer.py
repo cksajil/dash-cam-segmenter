@@ -2,6 +2,10 @@ import os
 import imageio
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+from src.general import load_config
+
+
+config = load_config("my_config.yaml")
 
 
 def plot_n_save(k, original, segmented):
@@ -9,8 +13,8 @@ def plot_n_save(k, original, segmented):
     A custom plotting function to display and save
     original and segmented images side by side
     """
-    width = 9
-    height = 3
+    width = config["out_fig_width"]
+    height = config["out_fig_height"]
 
     fig, ax = plt.subplots(1, 2)
     fig.tight_layout()
