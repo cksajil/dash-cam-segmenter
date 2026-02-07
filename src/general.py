@@ -1,5 +1,7 @@
-import yaml
 import os
+import cv2
+import yaml
+import numpy as np
 
 
 def load_config(config_name):
@@ -33,3 +35,11 @@ def get_list_of_seg_images():
     frame_end = max(frames)
     images = ["frame_" + str(i) + ".png" for i in range(frame_start, frame_end)]
     return images
+
+
+def normalize_image(img):
+    config = load_config("my_config.yaml")
+    mean = np.array(config["mean"], dtype=np.float32)
+    std = np.array(config["std"], dtype=np.float32)
+    img = (img - mean) / std
+    return img

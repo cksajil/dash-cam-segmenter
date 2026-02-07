@@ -6,9 +6,10 @@ import requests
 import numpy as np
 from tqdm import tqdm
 import tensorflow as tf
-from pytube import YouTube
+from pytubefix import YouTube
 from src.unet import load_unet
 from src.visulaizer import plot_n_save, gif_creator
+from src.general import normalize_image
 from src.general import load_config, create_folder, get_list_of_seg_images
 
 ssl._create_default_https_context = ssl._create_stdlib_context
@@ -86,7 +87,7 @@ def process_video(video_path):
     model = load_unet()
     cap = cv2.VideoCapture(video_path)
     N = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    # fps = cap.get(cv2.CAP_PROP_FPS)
     k = 0
     pbar = tqdm(total=N)
     while cap.isOpened():
@@ -96,6 +97,9 @@ def process_video(video_path):
         frame_raw = cv2.resize(
             frame_raw, (config["image_width"], config["image_height"])
         )
+        # frame_raw = cv2.cvtColor(frame_raw, cv2.COLOR_BGR2RGB)
+        frame_raw = frame_raw.astype(np.float32) / 255.0
+        # frame_raw = normalize_image(frame_raw)
         frame_out = predict_with_model(model, frame_raw)
         plot_n_save(k, frame_raw, frame_out)
         pbar.update(k / N)
