@@ -1,51 +1,49 @@
-# Real-time segmentation of dash cam videos
-Pretrained computer vision models such as UNET and CANET are used to segment dash cam video specifically on Indian roads.
+# Real-time segmentation of dash-cam videos
 
+This project segments dash-cam video frames using a pretrained UNET model and renders the output as a GIF for quick review. It supports both local video files and YouTube URLs as input.
 
-<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3plb2d2MWk3bnlheXY5eWRsNTBibWNtcmR1YTJ5ajhkc3hqc3R1ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5e8MseZLO4dS6BK6N7/giphy.gif" width="800">
+### Demo
+- YouTube demo: https://youtu.be/U3R7oS2YvK4
 
-### [To see demo video, click here](https://youtu.be/U3R7oS2YvK4)
+---
 
+## Production-grade improvements included
+- Stronger CLI validation (`--youtube` XOR `--file` + helpful errors).
+- Structured logging with optional `--verbose` mode.
+- Safer model download flow with HTTP status validation and progress tracking.
+- Deterministic frame ordering and cleanup of stale frames between runs.
+- Improved path handling and config loading robustness.
+- Typed function signatures and better runtime errors.
 
-**Python Version**
-```
-Python 3.9.1
-```
+---
 
-### Setting up virtual environment
+## Requirements
+- Python 3.9+
+- `pip install -r requirements.txt`
 
-```console
-# Installing Virtual Environment
-python -m pip install --user virtualenv
+## Setup
 
-# Creating New Virtual Environment
-python -m venv envname
-
-# Activating Virtual Environment
-source envname/bin/activate
-
-# Upgrade PIP
+```bash
+python -m venv .venv
+source .venv/bin/activate
 python -m pip install --upgrade pip
-
-# Installing Packages
 python -m pip install -r requirements.txt
 ```
 
-### How to run
+## Usage
 
-```console
-python3 main.py --youtube "YouTube video URL"
+```bash
+# Segment a YouTube video
+python main.py --youtube "https://youtu.be/h1u5OzTdbpc"
 
-python3 main.py --file <path_to_video_in_hard_disc>
+# Segment a local file
+python main.py --file ./video/demo_video.mp4
 
-# Example
-python3 main.py --youtube "https://youtu.be/h1u5OzTdbpc"
-
-python3 main.py --file ./video/demo_video.mp4
+# Optional: verbose logs
+python main.py --file ./video/demo_video.mp4 --verbose
 ```
 
+## Output
+- Segmented frames are written to `processed_frames/`.
+- Final GIF is written to `video/`.
 
-### Output
-An output video like the following comparing original and segmented frames side by side will get generated in the `video` folder.
-
-<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3plb2d2MWk3bnlheXY5eWRsNTBibWNtcmR1YTJ5ajhkc3hqc3R1ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5e8MseZLO4dS6BK6N7/giphy.gif" width="800">

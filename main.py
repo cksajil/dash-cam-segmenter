@@ -1,165 +1,193 @@
-import os
-import cv2
-import ssl
 import argparse
-import requests
+import logging
+import os
+import ssl
+from pathlib import Path
+from typing import Iterable
+
+import cv2
 import numpy as np
-from tqdm import tqdm
+import requests
 import tensorflow as tf
 from pytubefix import YouTube
+from requests import Response
+from tqdm import tqdm
+
+from src.general import create_folder, get_list_of_seg_images, load_config
 from src.unet import load_unet
-from src.visulaizer import plot_n_save, gif_creator
-from src.general import normalize_image
-from src.general import load_config, create_folder, get_list_of_seg_images
+from src.visulaizer import gif_creator, plot_n_save
 
 ssl._create_default_https_context = ssl._create_stdlib_context
 
-config = load_config("my_config.yaml")
+LOGGER = logging.getLogger(__name__)
+CONFIG = load_config("my_config.yaml")
 
 
-def initialize_directories():
-    """
-    Create required directories if it does not exist
-    """
-    print("Creating folders if does not exist")
-    folder_names = ["video", "processed_frames", "models"]
-    for fol_name in folder_names:
-        create_folder(fol_name)
+def configure_logging(verbose: bool = False) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+    )
 
 
-def download_model():
-    """
-    Download pretrained model if not already downloaded
-    """
-    if not os.path.exists(os.path.join(config["model_loc"], config["unet_model_name"])):
-        print("Downloading pretrained UNET model if not exists")
-        doi = config["unet_model_doi"]
-        response = requests.get(f"https://zenodo.org/api/records/{doi}")
-        data = response.json()
-        files = data["files"]
-        model_files = [file for file in files if file["key"].endswith(".h5")]
-
-        if len(model_files) == 0:
-            print("No model files found.")
-        else:
-            model_file = model_files[0]
-            file_url = model_file["links"]["self"]
-            model_filename = model_file["key"]
-
-            response = requests.get(file_url, stream=True)
-            segments = response.iter_content()
-            with open(
-                os.path.join(config["model_loc"], config["unet_model_name"]), "wb"
-            ) as file:
-                for chunk in tqdm(segments):
-                    file.write(chunk)
-
-            print(f"Model downloaded as {model_filename}")
+def initialize_directories() -> None:
+    """Create required directories if they do not exist."""
+    for folder_name in ("video", "processed_frames", "models"):
+        create_folder(folder_name)
 
 
-def on_progress(stream, chunk, bytes_remaining):
-    """
-    Function to track progress of download
-    """
+def _request_json(url: str, timeout: int = 30) -> dict:
+    response: Response = requests.get(url, timeout=timeout)
+    response.raise_for_status()
+    return response.json()
+
+
+def download_model() -> Path:
+    """Download the pretrained model if not already available."""
+    model_path = Path(CONFIG["model_loc"]) / CONFIG["unet_model_name"]
+    if model_path.exists():
+        LOGGER.info("Using existing model at %s", model_path)
+        return model_path
+
+    LOGGER.info("Downloading pretrained UNET model")
+    record = _request_json(f"https://zenodo.org/api/records/{CONFIG['unet_model_doi']}")
+    model_files = [file for file in record.get("files", []) if file["key"].endswith(".h5")]
+
+    if not model_files:
+        raise RuntimeError("No .h5 model files found in Zenodo record")
+
+    file_url = model_files[0]["links"]["self"]
+    response = requests.get(file_url, stream=True, timeout=60)
+    response.raise_for_status()
+    total = int(response.headers.get("content-length", 0))
+
+    with model_path.open("wb") as handle, tqdm(
+        total=total,
+        unit="B",
+        unit_scale=True,
+        desc="model-download",
+    ) as pbar:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                handle.write(chunk)
+                pbar.update(len(chunk))
+
+    LOGGER.info("Model downloaded to %s", model_path)
+    return model_path
+
+
+def on_progress(stream, _chunk, bytes_remaining):
+    """Track YouTube download progress."""
     total_size = stream.filesize
     bytes_downloaded = total_size - bytes_remaining
     percentage = (bytes_downloaded / total_size) * 100
-    print(f"Downloading: {percentage:.2f}%")
+    LOGGER.info("YouTube download progress: %.2f%%", percentage)
 
 
-def predict_with_model(model, image):
-    """
-    Function to predict segmented image
-    from raw image using UNET model
-    """
+def predict_with_model(model, image: np.ndarray) -> tf.Tensor:
+    """Predict segmentation mask from a single normalized BGR image."""
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     pred_image = model.predict(image[np.newaxis, :, :, :], verbose=0)
     pred_image = pred_image[0, :, :, :]
-    pred_image = tf.argmax(pred_image, axis=-1)
-    return pred_image
+    return tf.argmax(pred_image, axis=-1)
 
 
-def process_video(video_path):
-    """
-    Function to process raw video and create segmented video output
-    """
-    print("Segmenting Frames")
+def process_video(video_path: str) -> None:
+    """Process an input video and generate segmented frame images."""
+    LOGGER.info("Segmenting video frames from %s", video_path)
     model = load_unet()
     cap = cv2.VideoCapture(video_path)
-    N = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    # fps = cap.get(cv2.CAP_PROP_FPS)
-    k = 0
-    pbar = tqdm(total=N)
-    while cap.isOpened():
-        ret, frame_raw = cap.read()
-        if not ret:
-            break
-        frame_raw = cv2.resize(
-            frame_raw, (config["image_width"], config["image_height"])
-        )
-        # frame_raw = cv2.cvtColor(frame_raw, cv2.COLOR_BGR2RGB)
-        frame_raw = frame_raw.astype(np.float32) / 255.0
-        # frame_raw = normalize_image(frame_raw)
-        frame_out = predict_with_model(model, frame_raw)
-        plot_n_save(k, frame_raw, frame_out)
-        pbar.update(k / N)
-        k += 1
-    pbar.close()
+    if not cap.isOpened():
+        raise FileNotFoundError(f"Unable to open video file: {video_path}")
 
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_idx = 0
+
+    for old_frame in Path(CONFIG["frames_loc"]).glob("frame_*.png"):
+        old_frame.unlink(missing_ok=True)
+
+    with tqdm(total=total_frames, desc="segment-frames") as pbar:
+        while cap.isOpened():
+            ret, frame_raw = cap.read()
+            if not ret:
+                break
+
+            frame_raw = cv2.resize(frame_raw, (CONFIG["image_width"], CONFIG["image_height"]))
+            frame_raw = frame_raw.astype(np.float32) / 255.0
+            frame_out = predict_with_model(model, frame_raw)
+            plot_n_save(frame_idx, frame_raw, frame_out)
+
+            frame_idx += 1
+            pbar.update(1)
+
+    LOGGER.info("Processed %s frames", frame_idx)
     cap.release()
     cv2.destroyAllWindows()
 
 
-def download_youtube_video(youtube_url, output_dir):
-    print("Downloads video if it does not exist locally")
+def download_youtube_video(youtube_url: str, output_dir: str) -> str:
+    """Download YouTube video at 360p progressive stream."""
+    LOGGER.info("Downloading YouTube video: %s", youtube_url)
     yt = YouTube(youtube_url, on_progress_callback=on_progress)
     stream = yt.streams.filter(res="360p", progressive=True).first()
-    video_path = os.path.join(output_dir, config["out_video_name"])
-    stream.download(output_path=output_dir, filename=config["out_video_name"])
-    return video_path
+    if stream is None:
+        raise RuntimeError("No compatible 360p progressive stream available for this URL")
+
+    output_path = os.path.join(output_dir, CONFIG["out_video_name"])
+    stream.download(output_path=output_dir, filename=CONFIG["out_video_name"])
+    LOGGER.info("Saved source video to %s", output_path)
+    return output_path
 
 
-def generate_video(images, FPS=30.0):
-    print("Generates original and segmented comparison video")
-    video_name = config["seg_video_name"]
-    image_folder = config["frames_loc"]
-    frame = cv2.imread(os.path.join(image_folder, images[0]))
-    height, width, layers = frame.shape
+def generate_video(images: Iterable[str], fps: float = 30.0) -> None:
+    """Generate comparison video from segmented frame images."""
+    images = list(images)
+    if not images:
+        raise ValueError("No frame images were found to create output video")
+
+    LOGGER.info("Generating comparison video")
+    image_folder = CONFIG["frames_loc"]
+    first_frame = cv2.imread(os.path.join(image_folder, images[0]))
+    height, width, _ = first_frame.shape
     video = cv2.VideoWriter(
-        filename=os.path.join(config["video_loc"], video_name),
+        filename=os.path.join(CONFIG["video_loc"], CONFIG["seg_video_name"]),
         fourcc=cv2.VideoWriter_fourcc("m", "p", "4", "v"),
         frameSize=(width, height),
-        fps=FPS,
+        fps=fps,
     )
 
-    for image in tqdm(images):
-        video.write(cv2.imread(os.path.join(image_folder, image)))
+    for image_name in tqdm(images, desc="write-video"):
+        video.write(cv2.imread(os.path.join(image_folder, image_name)))
 
     cv2.destroyAllWindows()
     video.release()
 
 
-def main():
-    initialize_directories()
-    parser = argparse.ArgumentParser(
-        description="Process YouTube videos or video files."
-    )
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Segment dash-cam videos using pretrained UNET")
     parser.add_argument("--youtube", type=str, help="YouTube video URL")
-    parser.add_argument("--file", type=str, help="Path to the video file")
+    parser.add_argument("--file", type=str, help="Path to a local video file")
+    parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
     args = parser.parse_args()
 
-    if args.youtube:
-        video_path = download_youtube_video(args.youtube, config["video_loc"])
-    elif args.file:
-        video_path = args.file
-    else:
-        print("Please provide either a YouTube URL or a video file path.")
-        return
+    if bool(args.youtube) == bool(args.file):
+        parser.error("Provide exactly one of --youtube or --file.")
+    return args
+
+
+def main() -> None:
+    args = parse_args()
+    configure_logging(args.verbose)
+    initialize_directories()
+
+    video_path = download_youtube_video(args.youtube, CONFIG["video_loc"]) if args.youtube else args.file
 
     download_model()
     process_video(video_path)
     images = get_list_of_seg_images()
-    # generate_video(images)
+    if not images:
+        raise RuntimeError("No segmented frames generated; cannot create output GIF")
     gif_creator(images)
 
 

@@ -1,45 +1,48 @@
 import os
-import cv2
-import yaml
+from pathlib import Path
+from typing import Any
+
 import numpy as np
+import yaml
 
 
-def load_config(config_name):
-    """
-    A function to load and return config file in YAML format
-    """
-    CONFIG_PATH = "./config/"
-    with open(os.path.join(CONFIG_PATH, config_name)) as file:
-        config = yaml.safe_load(file)
-
-    return config
+CONFIG_PATH = Path(__file__).resolve().parent.parent / "config"
 
 
-def create_folder(directory):
-    """Function to create a folder in a location if it does not exist"""
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+def load_config(config_name: str) -> dict[str, Any]:
+    """Load a config file from the repository's config directory."""
+    config_path = CONFIG_PATH / config_name
+    if not config_path.exists():
+        raise FileNotFoundError(f"Config file not found: {config_path}")
+
+    with config_path.open("r", encoding="utf-8") as file:
+        return yaml.safe_load(file)
 
 
-def get_list_of_seg_images():
-    """
-    Returns the list of segmented images in the ordinal order
-    """
-    print("Getting list of segmented frames")
+def create_folder(directory: str) -> None:
+    """Create a folder if it does not already exist."""
+    Path(directory).mkdir(parents=True, exist_ok=True)
 
+
+def get_list_of_seg_images() -> list[str]:
+    """Return segmented frame images in numeric order."""
     config = load_config("my_config.yaml")
-    image_folder = config["frames_loc"]
-    images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
-    frames = [int(image.split(".")[0].split("_")[1]) for image in images]
-    frame_start = min(frames)
-    frame_end = max(frames)
-    images = ["frame_" + str(i) + ".png" for i in range(frame_start, frame_end)]
-    return images
+    image_folder = Path(config["frames_loc"])
+    images = []
+
+    for img in image_folder.glob("frame_*.png"):
+        try:
+            index = int(img.stem.split("_")[1])
+        except (IndexError, ValueError):
+            continue
+        images.append((index, img.name))
+
+    images.sort(key=lambda item: item[0])
+    return [name for _, name in images]
 
 
-def normalize_image(img):
+def normalize_image(img: np.ndarray) -> np.ndarray:
     config = load_config("my_config.yaml")
     mean = np.array(config["mean"], dtype=np.float32)
     std = np.array(config["std"], dtype=np.float32)
-    img = (img - mean) / std
-    return img
+    return (img - mean) / std
