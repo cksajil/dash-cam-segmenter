@@ -1,21 +1,17 @@
 import os
+
 import imageio
-from tqdm import tqdm
 import matplotlib.pyplot as plt
+from tqdm import tqdm
+
 from src.general import load_config
 
 
 config = load_config("my_config.yaml")
 
 
-def plot_n_save(k, original, segmented):
-    """
-    A custom plotting function to display and save
-    original and segmented images side by side
-    """
-    width = config["out_fig_width"]
-    height = config["out_fig_height"]
-
+def plot_n_save(k: int, original, segmented) -> None:
+    """Display and save original and segmented images side by side."""
     fig, ax = plt.subplots(1, 2)
     fig.tight_layout()
     ax[0].imshow(original)
@@ -28,21 +24,15 @@ def plot_n_save(k, original, segmented):
     ax[1].set_xticks([])
     ax[1].set_yticks([])
 
-    fig.set_size_inches(width, height)
+    fig.set_size_inches(config["out_fig_width"], config["out_fig_height"])
+    fig.savefig(os.path.join(config["frames_loc"], f"frame_{k}.png"), dpi=200)
+    plt.close(fig)
 
-    fig.savefig(os.path.join(config["frames_loc"], "frame_{}.png".format(k)), dpi=200)
-    plt.close()
 
-
-def gif_creator(filenames):
-    """
-    A function to create segmented video
-    from segmented images passed as parameters
-    """
-    print("Generaing segmented GIF video")
-    with imageio.get_writer(
-        os.path.join(config["video_loc"], config["out_gif_name"]), mode="I"
-    ) as writer:
-        for filename in tqdm(filenames):
+def gif_creator(filenames: list[str]) -> None:
+    """Create segmented GIF video from rendered frame images."""
+    output_path = os.path.join(config["video_loc"], config["out_gif_name"])
+    with imageio.get_writer(output_path, mode="I") as writer:
+        for filename in tqdm(filenames, desc="write-gif"):
             image = imageio.imread(os.path.join(config["frames_loc"], filename))
             writer.append_data(image)
