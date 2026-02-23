@@ -10,3 +10,4 @@ venv/
 video/
 processed_frames/
 models/
+data/
