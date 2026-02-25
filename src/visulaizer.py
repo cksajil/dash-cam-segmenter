@@ -1,11 +1,8 @@
 import os
-
 import imageio
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
 from src.general import load_config
-
 
 config = load_config("my_config.yaml")
 

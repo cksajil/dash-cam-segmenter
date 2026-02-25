@@ -1,9 +1,7 @@
-import os
-from pathlib import Path
-from typing import Any
-
-import numpy as np
 import yaml
+import numpy as np
+from typing import Any
+from pathlib import Path
 
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "config"

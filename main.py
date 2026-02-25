@@ -14,8 +14,8 @@ from requests import Response
 from tqdm import tqdm
 
 from src.general import create_folder, get_list_of_seg_images, load_config
-from src.unet import load_unet
 from src.visulaizer import gif_creator, plot_n_save
+from src.unet import build_unet
 
 ssl._create_default_https_context = ssl._create_stdlib_context
 
@@ -44,37 +44,44 @@ def _request_json(url: str, timeout: int = 30) -> dict:
 
 
 def download_model() -> Path:
-    """Download the pretrained model if not already available."""
-    model_path = Path(CONFIG["model_loc"]) / CONFIG["unet_model_name"]
-    if model_path.exists():
-        LOGGER.info("Using existing model at %s", model_path)
-        return model_path
+    model_path = Path(CONFIG["model_loc"], CONFIG["unet_model_name"])
+    model = build_unet()
+    model.load_weights(model_path)
+    return model
 
-    LOGGER.info("Downloading pretrained UNET model")
-    record = _request_json(f"https://zenodo.org/api/records/{CONFIG['unet_model_doi']}")
-    model_files = [file for file in record.get("files", []) if file["key"].endswith(".h5")]
 
-    if not model_files:
-        raise RuntimeError("No .h5 model files found in Zenodo record")
+# def download_model() -> Path:
+#     """Download the pretrained model if not already available."""
+#     model_path = Path(CONFIG["model_loc"]) / CONFIG["unet_model_name"]
+#     if model_path.exists():
+#         LOGGER.info("Using existing model at %s", model_path)
+#         return model_path
 
-    file_url = model_files[0]["links"]["self"]
-    response = requests.get(file_url, stream=True, timeout=60)
-    response.raise_for_status()
-    total = int(response.headers.get("content-length", 0))
+#     LOGGER.info("Downloading pretrained UNET model")
+#     record = _request_json(f"https://zenodo.org/api/records/{CONFIG['unet_model_doi']}")
+#     model_files = [file for file in record.get("files", []) if file["key"].endswith(".h5")]
 
-    with model_path.open("wb") as handle, tqdm(
-        total=total,
-        unit="B",
-        unit_scale=True,
-        desc="model-download",
-    ) as pbar:
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                handle.write(chunk)
-                pbar.update(len(chunk))
+#     if not model_files:
+#         raise RuntimeError("No .h5 model files found in Zenodo record")
 
-    LOGGER.info("Model downloaded to %s", model_path)
-    return model_path
+#     file_url = model_files[0]["links"]["self"]
+#     response = requests.get(file_url, stream=True, timeout=60)
+#     response.raise_for_status()
+#     total = int(response.headers.get("content-length", 0))
+
+#     with model_path.open("wb") as handle, tqdm(
+#         total=total,
+#         unit="B",
+#         unit_scale=True,
+#         desc="model-download",
+#     ) as pbar:
+#         for chunk in response.iter_content(chunk_size=8192):
+#             if chunk:
+#                 handle.write(chunk)
+#                 pbar.update(len(chunk))
+
+#     LOGGER.info("Model downloaded to %s", model_path)
+#     return model_path
 
 
 def on_progress(stream, _chunk, bytes_remaining):
@@ -88,6 +95,7 @@ def on_progress(stream, _chunk, bytes_remaining):
 def predict_with_model(model, image: np.ndarray) -> tf.Tensor:
     """Predict segmentation mask from a single normalized BGR image."""
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (CONFIG["image_width"], CONFIG["image_height"]))
     pred_image = model.predict(image[np.newaxis, :, :, :], verbose=0)
     pred_image = pred_image[0, :, :, :]
     return tf.argmax(pred_image, axis=-1)
@@ -96,7 +104,7 @@ def predict_with_model(model, image: np.ndarray) -> tf.Tensor:
 def process_video(video_path: str) -> None:
     """Process an input video and generate segmented frame images."""
     LOGGER.info("Segmenting video frames from %s", video_path)
-    model = load_unet()
+    model = download_model()
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise FileNotFoundError(f"Unable to open video file: {video_path}")
@@ -113,7 +121,9 @@ def process_video(video_path: str) -> None:
             if not ret:
                 break
 
-            frame_raw = cv2.resize(frame_raw, (CONFIG["image_width"], CONFIG["image_height"]))
+            frame_raw = cv2.resize(
+                frame_raw, (CONFIG["image_width"], CONFIG["image_height"])
+            )
             frame_raw = frame_raw.astype(np.float32) / 255.0
             frame_out = predict_with_model(model, frame_raw)
             plot_n_save(frame_idx, frame_raw, frame_out)
@@ -132,7 +142,9 @@ def download_youtube_video(youtube_url: str, output_dir: str) -> str:
     yt = YouTube(youtube_url, on_progress_callback=on_progress)
     stream = yt.streams.filter(res="360p", progressive=True).first()
     if stream is None:
-        raise RuntimeError("No compatible 360p progressive stream available for this URL")
+        raise RuntimeError(
+            "No compatible 360p progressive stream available for this URL"
+        )
 
     output_path = os.path.join(output_dir, CONFIG["out_video_name"])
     stream.download(output_path=output_dir, filename=CONFIG["out_video_name"])
@@ -165,7 +177,9 @@ def generate_video(images: Iterable[str], fps: float = 30.0) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Segment dash-cam videos using pretrained UNET")
+    parser = argparse.ArgumentParser(
+        description="Segment dash-cam videos using pretrained UNET"
+    )
     parser.add_argument("--youtube", type=str, help="YouTube video URL")
     parser.add_argument("--file", type=str, help="Path to a local video file")
     parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
@@ -181,7 +195,11 @@ def main() -> None:
     configure_logging(args.verbose)
     initialize_directories()
 
-    video_path = download_youtube_video(args.youtube, CONFIG["video_loc"]) if args.youtube else args.file
+    video_path = (
+        download_youtube_video(args.youtube, CONFIG["video_loc"])
+        if args.youtube
+        else args.file
+    )
 
     download_model()
     process_video(video_path)
