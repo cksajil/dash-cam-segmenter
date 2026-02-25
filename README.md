@@ -3,7 +3,7 @@
 This project segments dash-cam video frames using a pretrained UNET model and renders the output as a GIF for quick review. It supports both local video files and YouTube URLs as input.
 
 ### Demo
-- YouTube demo: https://youtu.be/U3R7oS2YvK4
+![](https://github.com/cksajil/dash-cam-segmenter/blob/main/images/segmented_movie.gif?raw=true)
 
 ---
 
