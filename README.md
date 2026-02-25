@@ -5,7 +5,7 @@ This project segments dash-cam video frames using a pretrained UNET model and re
 ### Demo
 ![](https://github.com/cksajil/dash-cam-segmenter/blob/main/images/segmented_movie.gif?raw=true)
 
----
+
 
 ## Production-grade improvements included
 - Stronger CLI validation (`--youtube` XOR `--file` + helpful errors).
@@ -16,6 +16,12 @@ This project segments dash-cam video frames using a pretrained UNET model and re
 - Typed function signatures and better runtime errors.
 
 ---
+
+
+## Dataset
+The dataset used for this project can be found at [Kaggle](https://www.kaggle.com/datasets/sajilck/road-segmentation-indian)
+
+
 
 ## Requirements
 - Python 3.9+
