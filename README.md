@@ -1,26 +1,13 @@
 # Real-time segmentation of dash-cam videos
 
-This project segments dash-cam video frames using a pretrained UNET model and renders the output as a GIF for quick review. It supports both local video files and YouTube URLs as input.
+This project segments dash-cam video frames using a pretrained UNET/DeepLabV3Plus models and renders the output as a GIF for quick review. It supports both local video files and YouTube URLs as input.
 
 ### Demo
 ![](https://github.com/cksajil/dash-cam-segmenter/blob/main/images/segmented_movie.gif?raw=true)
 
 
-
-## Production-grade improvements included
-- Stronger CLI validation (`--youtube` XOR `--file` + helpful errors).
-- Structured logging with optional `--verbose` mode.
-- Safer model download flow with HTTP status validation and progress tracking.
-- Deterministic frame ordering and cleanup of stale frames between runs.
-- Improved path handling and config loading robustness.
-- Typed function signatures and better runtime errors.
-
----
-
-
 ## Dataset
 The dataset used for this project can be found at [Kaggle](https://www.kaggle.com/datasets/sajilck/road-segmentation-indian)
-
 
 
 ## Requirements
@@ -51,5 +38,5 @@ python main.py --file ./video/demo_video.mp4 --verbose
 
 ## Output
 - Segmented frames are written to `processed_frames/`.
-- Final GIF is written to `video/`.
+- Final GIF is written to `images/`.
 

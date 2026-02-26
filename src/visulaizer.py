@@ -28,7 +28,7 @@ def plot_n_save(k: int, original, segmented) -> None:
 
 def gif_creator(filenames: list[str]) -> None:
     """Create segmented GIF video from rendered frame images."""
-    output_path = os.path.join(config["video_loc"], config["out_gif_name"])
+    output_path = os.path.join("images", config["out_gif_name"])
     with imageio.get_writer(output_path, mode="I") as writer:
         for filename in tqdm(filenames, desc="write-gif"):
             image = imageio.imread(os.path.join(config["frames_loc"], filename))

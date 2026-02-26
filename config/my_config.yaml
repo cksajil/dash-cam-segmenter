@@ -9,8 +9,8 @@ out_gif_name: segmented_movie.gif
 out_video_name: demo_video.mp4
 seg_video_name: segmented_video.mp4
 model_loc: models
-deployed_model: unet
-# deployed_model: deeplabv3
+# deployed_model: unet
+deployed_model: deeplabv3
 unet_model_doi: 18778819
 deeplabv3_model_doi: 18778871
 model_dir: static
