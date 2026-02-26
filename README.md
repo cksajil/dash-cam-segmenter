@@ -37,7 +37,7 @@ python main.py --file ./video/demo_video.mp4 --verbose
 ```
 
 ## Model Performance
-
+- Obtained a mean_iou Score of `0.65907` on test data
 []('https://raw.githubusercontent.com/cksajil/dash-cam-segmenter/refs/heads/main/images/iou_curve.png')
 
 ## Output
