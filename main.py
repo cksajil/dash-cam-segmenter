@@ -16,6 +16,7 @@ from tqdm import tqdm
 from src.general import create_folder, get_list_of_seg_images, load_config
 from src.visulaizer import gif_creator, plot_n_save
 from src.unet import build_unet
+from src.deeplabv3 import build_deeplabv3plus
 
 ssl._create_default_https_context = ssl._create_stdlib_context
 
@@ -43,45 +44,60 @@ def _request_json(url: str, timeout: int = 30) -> dict:
     return response.json()
 
 
-def download_model() -> Path:
-    model_path = Path(CONFIG["model_loc"], CONFIG["unet_model_name"])
-    model = build_unet()
+def load_model() -> Path:
+    model_name = CONFIG["deployed_model"]
+    model_path = Path(CONFIG["model_loc"], model_name + ".keras")
+    if model_name == "unet":
+        model = build_unet()
+    elif model_name == "deeplabv3":
+        model = build_deeplabv3plus()
     model.load_weights(model_path)
     return model
 
 
-# def download_model() -> Path:
-#     """Download the pretrained model if not already available."""
-#     model_path = Path(CONFIG["model_loc"]) / CONFIG["unet_model_name"]
-#     if model_path.exists():
-#         LOGGER.info("Using existing model at %s", model_path)
-#         return model_path
+def download_model() -> Path:
+    """Download the pretrained model if not already available."""
+    model_name = CONFIG["deployed_model"]
+    model_path = Path(CONFIG["model_loc"]) / f"{model_name}.keras"
 
-#     LOGGER.info("Downloading pretrained UNET model")
-#     record = _request_json(f"https://zenodo.org/api/records/{CONFIG['unet_model_doi']}")
-#     model_files = [file for file in record.get("files", []) if file["key"].endswith(".h5")]
+    if model_path.exists():
+        LOGGER.info("Using existing model at %s", model_path)
+        return model_path
 
-#     if not model_files:
-#         raise RuntimeError("No .h5 model files found in Zenodo record")
+    LOGGER.info("Downloading pretrained model '%s'", model_name)
 
-#     file_url = model_files[0]["links"]["self"]
-#     response = requests.get(file_url, stream=True, timeout=60)
-#     response.raise_for_status()
-#     total = int(response.headers.get("content-length", 0))
+    if CONFIG["deployed_model"] == "unet":
+        doi = CONFIG["unet_model_doi"]
+    elif CONFIG["deployed_model"] == "deeplabv3":
+        doi = CONFIG["deeplabv3_model_doi"]
 
-#     with model_path.open("wb") as handle, tqdm(
-#         total=total,
-#         unit="B",
-#         unit_scale=True,
-#         desc="model-download",
-#     ) as pbar:
-#         for chunk in response.iter_content(chunk_size=8192):
-#             if chunk:
-#                 handle.write(chunk)
-#                 pbar.update(len(chunk))
+    download_url = f"https://zenodo.org/api/records/{doi}"
+    record = _request_json(download_url)
+    model_files = [
+        file for file in record.get("files", []) if file["key"].endswith(".keras")
+    ]
 
-#     LOGGER.info("Model downloaded to %s", model_path)
-#     return model_path
+    if not model_files:
+        raise RuntimeError("No .keras model files found in Zenodo record")
+
+    file_url = model_files[0]["links"]["self"]
+    response = requests.get(file_url, stream=True, timeout=60)
+    response.raise_for_status()
+    total = int(response.headers.get("content-length", 0))
+
+    with model_path.open("wb") as handle, tqdm(
+        total=total,
+        unit="B",
+        unit_scale=True,
+        desc="model-download",
+    ) as pbar:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                handle.write(chunk)
+                pbar.update(len(chunk))
+
+    LOGGER.info("Model downloaded to %s", model_path)
+    return model_path
 
 
 def on_progress(stream, _chunk, bytes_remaining):
@@ -104,7 +120,7 @@ def predict_with_model(model, image: np.ndarray) -> tf.Tensor:
 def process_video(video_path: str) -> None:
     """Process an input video and generate segmented frame images."""
     LOGGER.info("Segmenting video frames from %s", video_path)
-    model = download_model()
+    model = load_model()
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise FileNotFoundError(f"Unable to open video file: {video_path}")

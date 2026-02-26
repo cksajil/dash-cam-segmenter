@@ -8,8 +8,11 @@ video_loc: video
 out_gif_name: segmented_movie.gif 
 out_video_name: demo_video.mp4
 seg_video_name: segmented_video.mp4
-model_loc: static
-unet_model_name: best_model.keras
-unet_model_dir: static
+model_loc: models
+deployed_model: unet
+# deployed_model: deeplabv3
+unet_model_doi: 18778819
+deeplabv3_model_doi: 18778871
+model_dir: static
 mean: [0.485, 0.456, 0.406]
 std:  [0.229, 0.224, 0.225]
