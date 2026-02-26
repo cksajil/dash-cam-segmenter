@@ -36,6 +36,10 @@ python main.py --file ./video/demo_video.mp4
 python main.py --file ./video/demo_video.mp4 --verbose
 ```
 
+## Model Performance
+
+[]('https://github.com/cksajil/dash-cam-segmenter/blob/main/images/iou_curve.png')
+
 ## Output
 - Segmented frames are written to `processed_frames/`.
 - Final GIF is written to `images/`.
