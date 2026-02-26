@@ -222,7 +222,8 @@ def main() -> None:
     images = get_list_of_seg_images()
     if not images:
         raise RuntimeError("No segmented frames generated; cannot create output GIF")
-    gif_creator(images)
+    # Create a short preview of segmented output as gif
+    gif_creator(images[:200])
 
 
 if __name__ == "__main__":
