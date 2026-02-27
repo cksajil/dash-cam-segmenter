@@ -11,7 +11,7 @@ seg_video_name: segmented_video.mp4
 model_loc: models
 # deployed_model: unet
 deployed_model: deeplabv3
-unet_model_doi: 18778819
+unet_model_doi: 18796570
 deeplabv3_model_doi: 18778871
 mean: [0.485, 0.456, 0.406]
 std:  [0.229, 0.224, 0.225]
