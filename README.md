@@ -1,6 +1,6 @@
 # Real-time segmentation of dash-cam videos
 
-This project segments dash-cam video frames using a pretrained UNET/DeepLabV3Plus models and renders the output as a GIF for quick review. It supports both local video files and YouTube URLs as input.
+This project segments dash-cam video frames using a U-Net or a DeepLabV3+ (ResNet-50 backbone) model trained on Indian road scenes, and renders the output as a GIF for quick review. It supports both local video files and YouTube URLs as input.
 
 ### Demo
 ![](https://github.com/cksajil/dash-cam-segmenter/blob/main/images/segmented_movie.gif?raw=true)
@@ -39,7 +39,7 @@ python main.py --file ./video/demo_video.mp4 --verbose
 ## Model Performance
 - Obtained a mean_iou Score of `0.65907` on test data
 
-<img src="https://raw.githubusercontent.com/cksajil/dash-cam-segmenter/refs/heads/main/images/iou_curve.png" alt="A beautiful landscape">
+<img src="https://raw.githubusercontent.com/cksajil/dash-cam-segmenter/refs/heads/main/images/iou_curve.png" alt="Mean IoU across training epochs">
 
 
 ## Output
